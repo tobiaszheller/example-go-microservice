@@ -1,0 +1,47 @@
+version: "2.1"
+services:
+    service-users:
+        build: .
+        container_name: service-users
+        networks:
+            - net
+        ports:
+            - "18082:18082"
+            - "18083:18083"
+        environment:
+            DB_DSN: "user:password@tcp(database:3306)/test?parseTime=true"
+        depends_on:
+            db:
+                condition: service_healthy
+    db:
+        container_name: db
+        image: mysql:5.7
+        networks:
+            net:
+                aliases:
+                    - database
+        ports:
+            - "13306:3306"
+        environment:
+            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+            MYSQL_USER: "user"
+            MYSQL_PASSWORD: "password"
+            MYSQL_DATABASE: "test"
+        healthcheck:
+            test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+            timeout: 20s
+            retries: 10
+    migrate:
+        image: migrate/migrate
+        networks:
+            - net
+        volumes:
+            - ./store/migrations:/migrations
+        command: ["-path", "/migrations", "-database",  "mysql://user:password@tcp(database:3306)/test", "up"]
+        links: 
+            - db
+        depends_on:
+            db:
+                condition: service_healthy
+networks:
+      net:

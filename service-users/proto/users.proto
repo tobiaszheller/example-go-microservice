@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+option go_package = "github.com/tobiaszheller/example-go-microservice/service-users/proto/users";
+
+service Users {
+    // Create new user.
+    rpc CreateUser (CreateUserRequest) returns (User) {};
+    // Update existing user.
+    rpc UpdateUser (UpdateUserRequest) returns (User) {};
+    // Get user returns user by id.
+    rpc GetUser (GetUserRequest) returns (User) {};
+    // Deletes an user.
+    rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {};
+    // List users.
+    rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {};
+}
+
+message CreateUserRequest {
+    User user = 1;
+}
+
+message UpdateUserRequest {
+    User user = 1;
+}
+
+message GetUserRequest {
+    string id = 1;
+}
+
+message DeleteUserRequest {
+    string id = 1;
+}
+
+message ListUsersRequest {
+    message Filtering {
+        // List of countries defined by ISO 3166-1 alpha-2.
+        repeated string countries = 1;
+    }
+    // Represents filtering parameters, if not provided all users will be returned.
+    Filtering filtering = 1;
+    // The maximum number of items to return.
+    int32 page_size = 2;
+    // The next_page_token value returned from a previous List request, if any.
+    string page_token = 3;
+}
+
+message ListUsersResponse {
+    // List of users.
+    repeated User users = 1;
+    // Token to retrieve the next page of results, or empty if there are no
+    // more results in the list.
+    string next_page_token = 2;
+}
+
+
+message User {
+    // ID of user.
+    // Output only for create. Required for update.
+    string id = 1;
+    // Fist name of user.
+    string first_name = 2;
+    // Last name of user.
+    string last_name = 3;
+    // Nicksname of user.
+    string nickname = 4;
+    // User's email.
+    string email = 5;
+    // Country is code defined by ISO 3166-1 alpha-2.
+    string country = 6;
+    // Timestamp of last updated_at.
+    // Output only.
+    google.protobuf.Timestamp updated_at = 8;
+}
+
+// UserCreated message is published when user is created.
+message UserCreated {
+    User user = 1;
+}
+
+// UserUpdated message is published when user is updated.
+message UserUpdated {
+    User user = 1;
+}
+
+// UserDeleted message is published when user is deleted.
+message UserDeleted {
+    User user = 1;
+}
